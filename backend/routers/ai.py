@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -7,13 +8,12 @@ import httpx
 router = APIRouter()
 
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
-MODEL = "claude-sonnet-4-20250514"
-
+MODEL = "claude-3-5-sonnet-20240620"
+API_KEY = os.getenv("ANTHROPIC_API_KEY", "SENIN_API_ANAHTARIN_BURAYA")
 
 class ChatRequest(BaseModel):
     message: str
     context: Optional[str] = None
-
 
 def _build_system_prompt() -> str:
     orders = list(ORDERS.values())
@@ -64,7 +64,6 @@ Beklemede: {len(pending)} | Kargoda: {len(shipped)} | Teslim: {len(delivered)}
 - "Ne yapmalıyım bugün?" gibi sorulara aksiyon listesi ver
 """
 
-
 @router.post("/chat")
 async def chat(req: ChatRequest):
     system = _build_system_prompt()
@@ -72,7 +71,11 @@ async def chat(req: ChatRequest):
     if req.context:
         messages[0]["content"] = f"[Bağlam: {req.context}]\n\n{req.message}"
 
-    headers = {"Content-Type": "application/json", "anthropic-version": "2023-06-01"}
+    headers = {
+        "Content-Type": "application/json", 
+        "anthropic-version": "2023-06-01",
+        "x-api-key": API_KEY
+    }
     payload = {"model": MODEL, "max_tokens": 1024, "system": system, "messages": messages}
 
     async with httpx.AsyncClient(timeout=30) as client:
@@ -84,10 +87,8 @@ async def chat(req: ChatRequest):
     data = resp.json()
     return {"response": data["content"][0]["text"]}
 
-
 @router.get("/insights")
 def ai_insights():
-    """Otomatik AI içgörüleri — sabit + dinamik veri kombinasyonu."""
     orders = list(ORDERS.values())
     products = list(PRODUCTS.values())
     delayed = [c for c in CARGO.values() if c.get("is_delayed")]
