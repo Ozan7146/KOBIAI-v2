@@ -82,57 +82,75 @@ function OrderDetail({ order, onClose, onUpdate }) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(10, 10, 15, 0.9)",
-        zIndex: 2000,
+        zIndex: 2500,
         display: "flex",
-        alignItems: isMobile ? "flex-end" : "center",
-        justifyContent: "center",
-        backdropFilter: "blur(8px)",
+        justifyContent: "flex-end",
+        pointerEvents: "auto",
       }}
     >
       <div
-        className="card fade-in"
+        onClick={onClose}
         style={{
-          width: "100%",
-          maxWidth: "600px",
-          maxHeight: isMobile ? "92vh" : "85vh",
-          overflowY: "auto",
-          border: "1px solid var(--border)",
-          borderRadius: isMobile ? "20px 20px 0 0" : "12px",
+          position: "absolute",
+          inset: 0,
+          background: "rgba(0, 0, 0, 0.6)",
+          backdropFilter: "blur(4px)",
+          animation: "fadeIn 0.3s ease",
+        }}
+      />
+
+      <div
+        style={{
+          position: "relative",
+          width: isMobile ? "100%" : "440px",
+          height: "100%",
+          background: "var(--bg-card)",
+          borderLeft: "1px solid var(--border)",
+          boxShadow: "-10px 0 30px rgba(0,0,0,0.5)",
+          display: "flex",
+          flexDirection: "column",
+          animation: "slideInRight 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)",
         }}
       >
         <div
-          className="card-header"
           style={{
-            position: "sticky",
-            top: 0,
-            background: "var(--bg-card)",
-            zIndex: 10,
+            padding: "24px",
             borderBottom: "1px solid var(--border)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            background: "rgba(255,255,255,0.02)",
           }}
         >
           <div>
             <div
               className="card-title text-accent"
-              style={{ fontSize: "18px" }}
+              style={{ fontSize: "18px", margin: 0 }}
             >
               {order.id}
             </div>
-            <div className="text-muted mono" style={{ fontSize: "11px" }}>
+            <div
+              className="text-muted mono"
+              style={{ fontSize: "12px", marginTop: "4px" }}
+            >
               {new Date(order.created_at).toLocaleString("tr-TR")}
             </div>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            <X size={18} />
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={onClose}
+            style={{ padding: "8px", borderRadius: "50%" }}
+          >
+            <X size={20} />
           </button>
         </div>
 
-        <div style={{ padding: "20px" }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-              gap: "20px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
               marginBottom: "24px",
             }}
           >
@@ -150,16 +168,17 @@ function OrderDetail({ order, onClose, onUpdate }) {
               >
                 MÜŞTERİ
               </div>
-              <div style={{ fontWeight: "700", fontSize: "15px" }}>
+              <div style={{ fontWeight: "700", fontSize: "15px", color: "var(--text-primary)" }}>
                 {order.customer_name}
               </div>
-              <div className="text-secondary" style={{ fontSize: "12px" }}>
+              <div className="text-secondary" style={{ fontSize: "12px", marginTop: "4px" }}>
                 {order.customer_email}
               </div>
-              <div className="text-secondary mono" style={{ fontSize: "12px" }}>
+              <div className="text-secondary mono" style={{ fontSize: "12px", marginTop: "2px" }}>
                 {order.customer_phone}
               </div>
             </div>
+            
             <div
               style={{
                 background: "var(--bg)",
@@ -191,24 +210,26 @@ function OrderDetail({ order, onClose, onUpdate }) {
               marginBottom: "20px",
             }}
           >
-            <table>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
-                  <th>Ürün</th>
-                  <th style={{ textAlign: "center" }}>Adet</th>
-                  <th style={{ textAlign: "right" }}>Tutar</th>
+                  <th style={{ padding: "12px", textAlign: "left" }}>Ürün</th>
+                  <th style={{ padding: "12px", textAlign: "center" }}>Adet</th>
+                  <th style={{ padding: "12px", textAlign: "right" }}>Tutar</th>
                 </tr>
               </thead>
               <tbody>
                 {order.items.map((item, i) => (
-                  <tr key={i}>
-                    <td style={{ fontSize: "13px" }}>{item.product_name}</td>
-                    <td className="mono" style={{ textAlign: "center" }}>
+                  <tr key={i} style={{ borderTop: "1px solid var(--border)" }}>
+                    <td style={{ padding: "12px", fontSize: "13px", color: "var(--text-primary)" }}>
+                      {item.product_name}
+                    </td>
+                    <td className="mono" style={{ padding: "12px", textAlign: "center", color: "var(--text-secondary)" }}>
                       {item.quantity}
                     </td>
                     <td
                       className="mono text-accent"
-                      style={{ textAlign: "right", fontWeight: "600" }}
+                      style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}
                     >
                       ₺{item.total_price.toFixed(2)}
                     </td>
@@ -224,14 +245,24 @@ function OrderDetail({ order, onClose, onUpdate }) {
             </span>
             <div
               className="text-primary mono"
-              style={{ fontSize: "24px", fontWeight: "800" }}
+              style={{ fontSize: "24px", fontWeight: "800", marginTop: "4px" }}
             >
               ₺{order.total_amount.toFixed(2)}
             </div>
           </div>
 
           {order.cargo_tracking_number && (
-            <div className="alert alert-info" style={{ marginBottom: "20px" }}>
+            <div
+              className="alert alert-info"
+              style={{
+                marginBottom: "20px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "12px 16px",
+                borderRadius: "8px",
+              }}
+            >
               <Truck size={16} />
               <div className="mono" style={{ fontSize: "13px" }}>
                 Takip: {order.cargo_tracking_number}
@@ -242,62 +273,89 @@ function OrderDetail({ order, onClose, onUpdate }) {
           <div
             style={{
               display: "flex",
-              gap: "10px",
-              flexDirection: isMobile ? "column" : "row",
+              flexDirection: "column",
+              gap: "12px",
             }}
           >
             <div
               style={{
-                flex: 1,
                 display: "flex",
-                gap: "10px",
-                alignItems: "center",
+                flexDirection: "column",
+                gap: "8px",
               }}
             >
+              <label className="nav-section-label" style={{ padding: 0 }}>SİPARİŞ DURUMU</label>
               <span
                 className={`badge ${STATUS_CLASSES[status]}`}
                 style={{
-                  padding: "10px 15px",
-                  flex: isMobile ? 1 : "none",
+                  padding: "12px 16px",
+                  fontSize: "14px",
                   justifyContent: "center",
+                  width: "100%",
                 }}
               >
                 {STATUS_LABELS[status]}
               </span>
-              {status === "preparing" && (
+            </div>
+
+            {status === "preparing" && (
+              <div style={{ marginTop: "8px" }}>
+                <label className="nav-section-label" style={{ padding: 0, marginBottom: "8px", display: "block" }}>KARGO FİRMASI</label>
                 <input
                   className="input"
-                  style={{ flex: 1 }}
+                  style={{ width: "100%", height: "44px" }}
                   value={carrier}
                   onChange={(e) => setCarrier(e.target.value)}
-                  placeholder="Firma..."
+                  placeholder="Kargo firması giriniz..."
                 />
-              )}
-            </div>
-            <div style={{ display: "flex", gap: "10px" }}>
-              {!["cancelled", "delivered"].includes(status) && (
-                <button
-                  className="btn btn-ghost"
-                  style={{ flex: 1, color: "var(--red)" }}
-                  onClick={cancel}
-                >
-                  İptal
-                </button>
-              )}
-              {NEXT_STATUS[status] && (
-                <button
-                  className="btn btn-primary"
-                  style={{ flex: 2, justifyContent: "center" }}
-                  onClick={advance}
-                  disabled={updating}
-                >
-                  {updating ? "..." : NEXT_LABEL[status]}
-                </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
+
+        <div
+          style={{
+            padding: "24px",
+            borderTop: "1px solid var(--border)",
+            background: "rgba(255,255,255,0.01)",
+            display: "grid",
+            gridTemplateColumns: ["cancelled", "delivered"].includes(status) ? "1fr" : "1fr 2fr",
+            gap: "12px",
+          }}
+        >
+          {!["cancelled", "delivered"].includes(status) && (
+            <button
+              className="btn btn-ghost"
+              style={{ color: "var(--red)", height: "44px", justifyContent: "center" }}
+              onClick={cancel}
+            >
+              İptal Et
+            </button>
+          )}
+          {NEXT_STATUS[status] ? (
+            <button
+              className="btn btn-primary"
+              style={{ height: "44px", justifyContent: "center" }}
+              onClick={advance}
+              disabled={updating}
+            >
+              {updating ? <div className="spinner" style={{ width: "18px", height: "18px" }} /> : NEXT_LABEL[status]}
+            </button>
+          ) : (
+            <button
+              className="btn btn-ghost"
+              style={{ height: "44px", justifyContent: "center" }}
+              onClick={onClose}
+            >
+              Kapat
+            </button>
+          )}
+        </div>
       </div>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+      `}</style>
     </div>
   );
 }
@@ -333,9 +391,9 @@ export default function Orders() {
   return (
     <div
       className="main-content fade-in"
-      style={{ padding: isMobile ? "12px" : "24px" }}
+      style={{ padding: isMobile ? "16px" : "32px", paddingBottom: isMobile ? "100px" : "32px" }}
     >
-      <div className="page-header" style={{ marginBottom: "24px" }}>
+      <div className="page-header" style={{ marginBottom: "32px" }}>
         <div
           style={{
             display: "flex",
@@ -343,9 +401,12 @@ export default function Orders() {
             alignItems: "center",
           }}
         >
-          <h1 className="page-title">Siparişler</h1>
-          <button className="btn btn-ghost" onClick={loadData}>
-            <RefreshCw size={16} />
+          <div>
+            <h1 className="page-title">Sipariş Yönetimi</h1>
+            <p className="page-subtitle text-muted">Müşteri siparişleri ve onay süreçleri</p>
+          </div>
+          <button className="btn btn-ghost" onClick={loadData} style={{ padding: "10px" }}>
+            <RefreshCw size={18} />
           </button>
         </div>
       </div>
@@ -355,15 +416,15 @@ export default function Orders() {
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
           gap: "12px",
-          marginBottom: "24px",
+          marginBottom: "32px",
         }}
       >
         <div style={{ position: "relative", flex: 2 }}>
           <Search
-            size={16}
+            size={18}
             style={{
               position: "absolute",
-              left: "12px",
+              left: "14px",
               top: "50%",
               transform: "translateY(-50%)",
               color: "var(--text-muted)",
@@ -371,25 +432,44 @@ export default function Orders() {
           />
           <input
             className="input"
-            style={{ paddingLeft: "40px" }}
-            placeholder="Müşteri veya ID..."
+            style={{ paddingLeft: "44px", width: "100%", height: "44px" }}
+            placeholder="Müşteri adı veya sipariş ID ile ara..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <select
-          className="input"
-          style={{ flex: 1 }}
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">Tüm Durumlar</option>
-          {Object.entries(STATUS_LABELS).map(([v, l]) => (
-            <option key={v} value={v}>
-              {l}
-            </option>
-          ))}
-        </select>
+        <div style={{ flex: 1, position: "relative" }}>
+          <select
+            className="input"
+            style={{
+              width: "100%",
+              height: "44px",
+              appearance: "none",
+              paddingRight: "40px",
+              cursor: "pointer",
+            }}
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="">Tüm Durumlar</option>
+            {Object.entries(STATUS_LABELS).map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={18}
+            style={{
+              position: "absolute",
+              right: "14px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "var(--text-muted)",
+              pointerEvents: "none",
+            }}
+          />
+        </div>
       </div>
 
       {selectedOrder && (
@@ -401,51 +481,53 @@ export default function Orders() {
       )}
 
       {loading ? (
-        <div className="loading">
+        <div className="loading" style={{ height: "300px" }}>
           <div className="spinner" />
         </div>
       ) : (
-        <div style={{ display: "grid", gap: "12px" }}>
+        <div style={{ display: "grid", gap: "16px" }}>
           {isMobile ? (
             filteredOrders.map((o) => (
               <div
                 key={o.id}
                 className="card"
                 onClick={() => setSelectedOrder(o)}
-                style={{ padding: "16px", border: "1px solid var(--border)" }}
+                style={{ padding: "20px", border: "1px solid var(--border)", background: "var(--bg-card)" }}
               >
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    marginBottom: "10px",
+                    marginBottom: "12px",
+                    alignItems: "center",
                   }}
                 >
                   <span
                     className="mono text-accent"
-                    style={{ fontSize: "13px", fontWeight: "700" }}
+                    style={{ fontSize: "14px", fontWeight: "700" }}
                   >
                     {o.id}
                   </span>
                   <span
                     className={`badge ${STATUS_CLASSES[o.status]}`}
-                    style={{ fontSize: "10px" }}
+                    style={{ fontSize: "11px", padding: "4px 8px" }}
                   >
                     {STATUS_LABELS[o.status]}
                   </span>
                 </div>
                 <div
                   style={{
-                    fontWeight: "600",
-                    fontSize: "15px",
-                    marginBottom: "4px",
+                    fontWeight: "700",
+                    fontSize: "16px",
+                    marginBottom: "6px",
+                    color: "var(--text-primary)"
                   }}
                 >
                   {o.customer_name}
                 </div>
                 <div
                   className="text-secondary"
-                  style={{ fontSize: "12px", marginBottom: "12px" }}
+                  style={{ fontSize: "12px", marginBottom: "16px" }}
                 >
                   {o.items.length} Kalem ·{" "}
                   {new Date(o.created_at).toLocaleDateString("tr-TR")}
@@ -456,7 +538,7 @@ export default function Orders() {
                     justifyContent: "space-between",
                     alignItems: "center",
                     borderTop: "1px solid var(--border)",
-                    paddingTop: "10px",
+                    paddingTop: "16px",
                   }}
                 >
                   <span className="text-muted" style={{ fontSize: "12px" }}>
@@ -464,7 +546,7 @@ export default function Orders() {
                   </span>
                   <span
                     className="mono text-primary"
-                    style={{ fontWeight: "800" }}
+                    style={{ fontWeight: "800", fontSize: "16px" }}
                   >
                     ₺{o.total_amount.toFixed(2)}
                   </span>
@@ -474,15 +556,15 @@ export default function Orders() {
           ) : (
             <div className="card" style={{ padding: 0 }}>
               <div className="table-wrap">
-                <table>
+                <table style={{ borderCollapse: "separate", borderSpacing: "0" }}>
                   <thead>
                     <tr>
-                      <th>Sipariş ID</th>
+                      <th style={{ paddingLeft: "24px" }}>Sipariş ID</th>
                       <th>Müşteri</th>
                       <th>Tutar</th>
                       <th>Durum</th>
                       <th>Tarih</th>
-                      <th style={{ width: "40px" }}></th>
+                      <th style={{ width: "40px", paddingRight: "24px" }}></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -492,13 +574,13 @@ export default function Orders() {
                         style={{ cursor: "pointer" }}
                         onClick={() => setSelectedOrder(o)}
                       >
-                        <td className="mono text-accent">{o.id}</td>
-                        <td style={{ fontWeight: "600" }}>{o.customer_name}</td>
+                        <td className="mono text-accent" style={{ paddingLeft: "24px", fontWeight: "600" }}>{o.id}</td>
+                        <td style={{ fontWeight: "600", color: "var(--text-primary)" }}>{o.customer_name}</td>
                         <td className="mono" style={{ fontWeight: "700" }}>
                           ₺{o.total_amount.toFixed(2)}
                         </td>
                         <td>
-                          <span className={`badge ${STATUS_CLASSES[o.status]}`}>
+                          <span className={`badge ${STATUS_CLASSES[o.status]}`} style={{ padding: "4px 10px" }}>
                             {STATUS_LABELS[o.status]}
                           </span>
                         </td>
@@ -508,8 +590,8 @@ export default function Orders() {
                         >
                           {new Date(o.created_at).toLocaleDateString("tr-TR")}
                         </td>
-                        <td>
-                          <ChevronDown size={16} className="text-muted" />
+                        <td style={{ paddingRight: "24px", textAlign: "right" }}>
+                          <ChevronDown size={16} className="text-muted" style={{ transform: "rotate(-90deg)" }} />
                         </td>
                       </tr>
                     ))}
@@ -522,11 +604,14 @@ export default function Orders() {
             <div
               style={{
                 textAlign: "center",
-                padding: "40px",
+                padding: "80px 20px",
+                background: "var(--bg-card)",
+                borderRadius: "12px",
+                border: "1px dashed var(--border)",
                 color: "var(--text-muted)",
               }}
             >
-              Kayıt bulunamadı.
+              Aradığınız kriterlere uygun sipariş bulunamadı.
             </div>
           )}
         </div>
