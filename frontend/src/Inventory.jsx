@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from "react";
+import StockAlertEmailModal from './StockAlertEmailModal'
 import {
-  RefreshCw,
-  TrendingUp,
-  AlertTriangle,
-  Package,
-  Plus,
-  X,
-  BarChart3,
-  PieChart,
+    RefreshCw, TrendingUp, AlertTriangle, Package,
+    Plus, X, BarChart3, PieChart, Mail,
 } from "lucide-react";
 import {
-  getInventoryAlerts,
-  getInventorySummary,
-  getTopSelling,
-  restockProduct,
+    getInventoryAlerts,
+    getInventorySummary,
+    getTopSelling,
+    restockProduct,
 } from "./client";
 
 const ALERT_LABELS = {
@@ -229,6 +224,8 @@ export default function Inventory() {
   const [loading, setLoading] = useState(true);
   const [restocking, setRestocking] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [emailProduct, setEmailProduct] = useState(null)
+
 
   const load = () => {
     setLoading(true);
@@ -292,7 +289,8 @@ export default function Inventory() {
           onDone={load}
           isMobile={isMobile}
         />
-      )}
+          )}
+          {emailProduct && <StockAlertEmailModal product={emailProduct} onClose={() => setEmailProduct(null)} />}
 
       {summary && (
         <div
@@ -479,13 +477,24 @@ export default function Inventory() {
                         {a.category} · {a.supplier}
                       </div>
                     </div>
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={() => setRestocking(a)}
-                      style={{ padding: "8px" }}
-                    >
-                      <Plus size={18} />
-                    </button>
+                          <div style={{ display: "flex", gap: "6px" }}>
+                              <button
+                                  className="btn btn-primary btn-sm"
+                                  onClick={() => setRestocking(a)}
+                                  style={{ padding: "8px" }}
+                                  title="Stok ekle"
+                              >
+                                  <Plus size={18} />
+                              </button>
+                              <button
+                                  className="btn btn-ghost btn-sm"
+                                  onClick={() => setEmailProduct(a)}
+                                  style={{ padding: "8px" }}
+                                  title="Tedarikçiye mail gönder"
+                              >
+                                  <Mail size={16} />
+                              </button>
+                          </div>
                   </div>
                   <div
                     style={{
