@@ -10,33 +10,21 @@ async function fetchEmailDraft(productId) {
     return res.json()
 }
 
-async function sendViaClaudeGmail(draft, senderEmail) {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+/** Örnek: Gemini tabanlı /api/ai/chat ile metin üretimi (şu an akışta kullanılmıyor). */
+async function sendViaGeminiChat(draft, senderEmail) {
+    const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1000,
-            messages: [
-                {
-                    role: 'user',
-                    content: `Gmail kullanarak şu maili gönder:
+            message: `Aşağıdaki tedarikçi mail taslağını gözden geçir ve kısa bir özet / iyileştirme önerisi ver (maili sen gönderemezsin; kullanıcı mailto ile gönderecek).
 Kimden: ${senderEmail}
 Konu: ${draft.subject}
-İçerik: ${draft.body}
-
-Lütfen bu maili hemen gönder ve başarılı olduğunu teyit et. Başka açıklama yapma.`
-                }
-            ],
-            mcp_servers: [
-                { type: 'url', url: 'https://gmailmcp.googleapis.com/mcp/v1', name: 'gmail-mcp' }
-            ]
+İçerik: ${draft.body}`,
         })
     })
     if (!response.ok) throw new Error(`API hatası: ${response.status}`)
     const data = await response.json()
-    const text = data.content?.filter(b => b.type === 'text').map(b => b.text).join('\n') || ''
-    return text
+    return data.response || ''
 }
 
 export default function StockAlertEmailModal({ product, onClose }) {

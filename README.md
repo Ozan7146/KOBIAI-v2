@@ -62,7 +62,7 @@ source venv/bin/activate       # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 # Sunucuyu başlat
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8000 // python -m uvicorn main:app --reload --port 8000
 ```
 
 ✅ Backend `http://localhost:8000` adresinde çalışıyor olmalı  
@@ -87,21 +87,30 @@ Vite, `/api/*` isteklerini otomatik olarak `localhost:8000`'e yönlendirir.
 
 ## 🤖 AI Asistan Kurulumu (Opsiyonel)
 
-AI chat özelliği için Anthropic API anahtarı gereklidir.
+AI chat ve analiz özellikleri için Google AI Studio **Gemini** API anahtarı gereklidir (`GEMINI_API_KEY` veya `GOOGLE_API_KEY`).
 
 ### Seçenek A — Environment Variable (Önerilen)
 ```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
+export GEMINI_API_KEY="..."
+export GEMINI_MODEL="gemini-1.5-flash"
+# İsteğe bağlı — 429 / kota patlamalarını yumuşatır:
+# export GEMINI_MAX_RETRIES=6
+# export GEMINI_REQUEST_GAP_SECONDS=0.4
 ```
 
 ### Seçenek B — `.env` dosyası
 ```bash
 # backend/.env
-ANTHROPIC_API_KEY=sk-ant-...
+GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-1.5-flash
+# GEMINI_MAX_RETRIES=6
+# GEMINI_REQUEST_GAP_SECONDS=0.4
 ```
 
 > API anahtarı olmadan tüm diğer özellikler çalışmaya devam eder.  
-> AI chat ve insights endpoint'leri HTTP 500 döner.
+> AI chat ve AI destekli analiz endpoint'leri Gemini yanıtı alamazsa yerel fallback verisi döner.
+
+**429 / kota:** Dashboard açılışında birden fazla AI endpoint’i aynı anda çağrılabiliyordu; frontend bu istekleri sıraya alır, backend ise Gemini çağrılarını tek sıraya koyar, istekler arası kısa boşluk ve `429` / `503` yanıtlarında API’nin verdiği süre veya üstel geri deneme uygular. Ücretsiz planda `gemini-2.0-flash` için kota `0` görünebiliyor; varsayılan model `gemini-1.5-flash` olarak ayarlıdır, gerekirse `GEMINI_MODEL` ile değiştirin.
 
 ---
 
@@ -193,7 +202,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 - Tek tıkla stok tazeleme
 - En çok satan ürünler analizi
 
-### ✅ AI Asistan (Claude)
+### ✅ AI Asistan (Gemini)
 - Gerçek zamanlı veri üzerinden sohbet
 - Sipariş, kargo, stok soruları
 - Müşteri bildirim metni üretme
@@ -213,7 +222,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 | **Grafikler** | Recharts |
 | **İkonlar** | Lucide React |
 | **Stil** | CSS Variables (custom design system) |
-| **AI** | Anthropic Claude (claude-sonnet-4) |
+| **AI** | Google Gemini API (`gemini-1.5-flash` varsayılan; `GEMINI_MODEL`, `GEMINI_MAX_RETRIES`, `GEMINI_REQUEST_GAP_SECONDS`) |
 | **HTTP Client** | httpx (backend), fetch (frontend) |
 
 ---

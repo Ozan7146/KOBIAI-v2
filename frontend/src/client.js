@@ -52,14 +52,23 @@ export const getCargoByOrder = (orderId) => req(`/cargo/order/${orderId}`)
 export const getDelayedShipments = () => req('/cargo/delayed')
 export const createCargo = (orderId, carrier, tracking) => {
   const qs = new URLSearchParams({ order_id: orderId, carrier, ...(tracking ? { tracking_number: tracking } : {}) }).toString()
-  return req(`/cargo/?${qs}`, { method: 'POST' })
+  return req(`/cargo${qs ? `?${qs}` : ''}`, { method: 'POST' })
 }
 export const updateCargoStatus = (tracking, status, location, isDelayed, delayReason) => {
   const params = { status }
   if (location) params.location = location
   if (isDelayed) params.is_delayed = true
   if (delayReason) params.delay_reason = delayReason
-  return req(`/cargo/${tracking}/status?${new URLSearchParams(params)}`, { method: 'PUT' })
+  return req(`/cargo/${tracking}/status?${new URLSearchParams(params).toString()}`, { method: 'PUT' })
+}
+
+// Smart carrier recommendation (AI destekli “kargo seçimi”)
+export const recommendCarrier = (weight_kg = 10.0, priority = 'balanced') => {
+  const qs = new URLSearchParams({
+    weight_kg: String(weight_kg),
+    priority,
+  }).toString()
+  return req(`/cargo/recommend?${qs}`)
 }
 
 // Inventory
@@ -67,6 +76,7 @@ export const getInventoryAlerts = () => req('/inventory/alerts')
 export const getInventorySummary = () => req('/inventory/summary')
 export const getTopSelling = (limit = 5) => req(`/inventory/top-selling?limit=${limit}`)
 export const restockProduct = (id, qty) => req(`/inventory/restock/${id}?quantity=${qty}`, { method: 'POST' })
+export const getDepletionForecast = () => req('/inventory/depletion-forecast')
 
 // AI Agent
 export const chatWithAgent = (message, context) => req('/ai/chat', {
@@ -74,4 +84,6 @@ export const chatWithAgent = (message, context) => req('/ai/chat', {
   body: JSON.stringify({ message, context })
 })
 export const getAIInsights = () => req('/ai/insights')
+export const getSalesAnalytics = () => req('/ai/sales-analytics')
+export const getDemandForecast = () => req('/ai/forecast')
 

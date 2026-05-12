@@ -1,5 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
+from dotenv import load_dotenv
+
+BASE_DIR = Path(__file__).resolve().parent
+ROOT_DIR = BASE_DIR.parent
+
+# Load both locations; existing values are preserved so an empty placeholder
+# in backend/.env does not erase a real key from the project root.
+load_dotenv(dotenv_path=ROOT_DIR / ".env")
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 from routers import dashboard, products, orders, cargo, inventory, ai
 

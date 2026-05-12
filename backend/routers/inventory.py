@@ -1,5 +1,8 @@
+import json
+
 from fastapi import APIRouter, HTTPException
 from data.store import PRODUCTS
+from ai_client import AIClientError, ask_gemini_json
 
 router = APIRouter()
 
@@ -155,3 +158,168 @@ Saygılarımızla"""
         "current_stock":    p["stock_quantity"],
         "min_threshold":    p["min_stock_threshold"],
     }
+
+
+# ── YENİ: Stok Tükenme Tahmini ────────────────────────────────────────────────
+def _local_depletion_forecast() -> dict:
+    """
+    Her ürün için günlük satış hızına göre kaç günde stok biteceğini hesaplar.
+    Urgency seviyeleri:
+      - critical : <= 3 gün
+      - warning  : <= 7 gün
+      - watch    : <= 14 gün
+      - ok       : 14 günden fazla
+    """
+    results = []
+
+    for p in PRODUCTS.values():
+        sales_30 = p.get("sales_last_30_days", 0)
+        stock    = p["stock_quantity"]
+        unit     = p.get("unit", "adet")
+        daily    = round(sales_30 / 30, 2)
+
+        if stock == 0:
+            results.append({
+                "product_id":           p["id"],
+                "product_name":         p["name"],
+                "category":             p["category"],
+                "supplier":             p.get("supplier", ""),
+                "current_stock":        0,
+                "daily_sales_rate":     daily,
+                "days_until_empty":     0,
+                "urgency":              "critical",
+                "urgency_label":        "🔴 Stok Tükendi",
+                "suggested_reorder_qty": _suggested_qty(p),
+                "unit":                 unit,
+            })
+            continue
+
+        if daily <= 0:
+            # Satış verisi yoksa tahmin yapılamaz, ama stok uyarısı varsa yine ekle
+            alert = _compute_alert(p)
+            if alert != "ok":
+                results.append({
+                    "product_id":           p["id"],
+                    "product_name":         p["name"],
+                    "category":             p["category"],
+                    "supplier":             p.get("supplier", ""),
+                    "current_stock":        stock,
+                    "daily_sales_rate":     0,
+                    "days_until_empty":     None,
+                    "urgency":              "watch",
+                    "urgency_label":        "⚪ Satış Verisi Yetersiz",
+                    "suggested_reorder_qty": _suggested_qty(p),
+                    "unit":                 unit,
+                })
+            continue
+
+        days = round(stock / daily, 1)
+
+        if days <= 3:
+            urgency       = "critical"
+            urgency_label = f"🔴 {days} günde tükenir — Acil sipariş ver!"
+        elif days <= 7:
+            urgency       = "warning"
+            urgency_label = f"🟠 {days} günde tükenir — Bu hafta sipariş ver"
+        elif days <= 14:
+            urgency       = "watch"
+            urgency_label = f"🟡 {days} günde tükenir — Takipte tut"
+        else:
+            urgency       = "ok"
+            urgency_label = f"🟢 {days} günde tükenir — Stok yeterli"
+
+        results.append({
+            "product_id":           p["id"],
+            "product_name":         p["name"],
+            "category":             p["category"],
+            "supplier":             p.get("supplier", ""),
+            "current_stock":        stock,
+            "daily_sales_rate":     daily,
+            "days_until_empty":     days,
+            "urgency":              urgency,
+            "urgency_label":        urgency_label,
+            "suggested_reorder_qty": _suggested_qty(p),
+            "unit":                 unit,
+        })
+
+    # Önce critical/warning, sonra gün sayısına göre sırala
+    urgency_order = {"critical": 0, "warning": 1, "watch": 2, "ok": 3}
+    results.sort(key=lambda x: (
+        urgency_order.get(x["urgency"], 9),
+        x["days_until_empty"] if x["days_until_empty"] is not None else 9999
+    ))
+
+    critical_count = sum(1 for r in results if r["urgency"] == "critical")
+    warning_count  = sum(1 for r in results if r["urgency"] == "warning")
+
+    return {
+        "summary": {
+            "critical": critical_count,
+            "warning":  warning_count,
+            "total_analyzed": len(results),
+        },
+        "forecasts": results,
+    }
+
+
+@router.get("/depletion-forecast")
+async def depletion_forecast():
+    """
+    Stok tükenme tahminini Gemini ile yaptırır.
+    Gemini kullanılamazsa aynı shape ile yerel tahmin döner ve ai_unavailable=true olur.
+    """
+    local_result = _local_depletion_forecast()
+    products = list(PRODUCTS.values())
+
+    prompt = f"""Aşağıdaki ürün, stok ve geçmiş satış verilerini analiz et.
+Mevsimsellik varsayımlarını ve KOBİ operasyon risklerini dikkate alarak stokların ne zaman tükeneceğini tahmin et.
+Özellikle "A ürünü 3 gün içinde bitecek, hemen 50 adet sipariş verilmeli" gibi net uyarılar üret.
+
+Ürünler:
+{json.dumps(products, ensure_ascii=False)}
+
+Yerel ön hesaplama:
+{json.dumps(local_result, ensure_ascii=False)}
+
+Yanıtı SADECE şu JSON formatında ver:
+{{
+  "summary": {{
+    "critical": 0,
+    "warning": 0,
+    "total_analyzed": 8,
+    "ai_comment": "Kısa genel stok riski yorumu"
+  }},
+  "forecasts": [
+    {{
+      "product_id": "PRD-001",
+      "product_name": "Ürün adı",
+      "current_stock": 120,
+      "daily_sales_rate": 14,
+      "days_until_empty": 3,
+      "urgency": "critical | warning | watch | ok",
+      "urgency_label": "3 gün içinde bitecek, hemen 50 adet sipariş verilmeli",
+      "suggested_reorder_qty": 50,
+      "unit": "adet",
+      "ai_reason": "Kısa gerekçe"
+    }}
+  ]
+}}"""
+
+    try:
+        ai_result = await ask_gemini_json(
+            "Sen KOBİ stok ve talep tahmini yapan bir yapay zekasın. Türkçe, net ve geçerli JSON döndür.",
+            prompt,
+        )
+        ai_result["ai_powered"] = True
+        ai_result["ai_request_attempted"] = True
+        ai_result["source"] = "gemini"
+        return ai_result
+    except AIClientError as exc:
+        return {
+            **local_result,
+            "ai_request_attempted": True,
+            "ai_powered": False,
+            "ai_unavailable": True,
+            "source": "local_fallback",
+            "ai_error": str(exc),
+        }
