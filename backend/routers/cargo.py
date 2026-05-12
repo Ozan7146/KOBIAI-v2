@@ -343,3 +343,48 @@ def update_cargo_status(
             order["updated_at"] = now
 
     return c
+
+
+
+
+
+@router.get("/delay-email-draft/{tracking_number}")
+def get_delay_email_draft(tracking_number: str):
+    c = CARGO.get(tracking_number)
+    if not c:
+        raise HTTPException(404, f"Takip numarası bulunamadı: {tracking_number}")
+    if not c.get("is_delayed"):
+        raise HTTPException(400, "Bu kargo gecikmeli değil.")
+
+    order = ORDERS.get(c["order_id"])
+    if not order:
+        raise HTTPException(404, "Sipariş bulunamadı.")
+
+    customer_name = order["customer_name"]
+    delay_reason = c.get("delay_reason") or "beklenmedik bir durum"
+    estimated = c.get("estimated_delivery") or "en kısa sürede"
+    carrier = c["carrier"]
+    tracking = c["tracking_number"]
+
+    subject = f"Siparişiniz Hakkında Bilgilendirme - {c['order_id']}"
+    body = f"""Sayın {customer_name},
+
+{c['order_id']} numaralı siparişinizin kargosunda ({carrier} / {tracking}) {delay_reason} nedeniyle gecikme yaşandığını bildirmek isteriz.
+
+Tahmini teslimat tarihiniz: {estimated}
+
+Bu gecikmeden dolayı özür diler, anlayışınız için teşekkür ederiz. Kargo takibinizi {tracking} numarasıyla yapabilirsiniz.
+
+Herhangi bir sorunuz olursa bizimle iletişime geçmekten çekinmeyiniz.
+
+Saygılarımızla"""
+
+    return {
+        "tracking_number": tracking,
+        "order_id": c["order_id"],
+        "customer_name": customer_name,
+        "customer_email": order.get("customer_email", ""),
+        "delay_reason": delay_reason,
+        "subject": subject,
+        "body": body,
+    }
