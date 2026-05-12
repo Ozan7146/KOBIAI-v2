@@ -11,7 +11,7 @@ ROOT_DIR = BASE_DIR.parent
 load_dotenv(dotenv_path=ROOT_DIR / ".env")
 load_dotenv(dotenv_path=BASE_DIR / ".env")
 
-from routers import dashboard, products, orders, cargo, inventory, ai
+from routers import dashboard, products, orders, cargo, inventory, ai, chat
 
 app = FastAPI(
     title="KOBİ AI API",
@@ -33,12 +33,11 @@ app.include_router(orders.router,    prefix="/api/orders",    tags=["Siparişler
 app.include_router(cargo.router,     prefix="/api/cargo",     tags=["Kargo"])
 app.include_router(inventory.router, prefix="/api/inventory", tags=["Envanter"])
 app.include_router(ai.router,        prefix="/api/ai",        tags=["AI"])
-
+app.include_router(chat.router,      prefix="/api/ai",        tags=["Chat"])
 
 @app.get("/")
 def root():
     return {"message": "KOBİ AI Backend çalışıyor 🚀", "docs": "/docs"}
-
 
 @app.get("/health")
 def health():

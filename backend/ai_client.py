@@ -4,7 +4,6 @@ import os
 import random
 import re
 from urllib.parse import quote
-
 import httpx
 
 # Google AI Studio / Gemini: https://ai.google.dev/gemini-api/docs

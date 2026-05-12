@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   Truck,
   BarChart3,
+  MessageSquare,
 } from "lucide-react";
 
 import Dashboard from "./Dashboard.jsx";
@@ -19,6 +20,7 @@ import Products from "./Products.jsx";
 import Orders from "./Orders.jsx";
 import Cargo from "./Cargo.jsx";
 import Inventory from "./Inventory.jsx";
+import ChatAssistant from "./components/ChatAssistant";
 
 const navItems = [
   { path: "/", label: "Yönetim Paneli", icon: LayoutDashboard },
@@ -28,7 +30,7 @@ const navItems = [
   { path: "/inventory", label: "Stok & Envanter", icon: BarChart3 },
 ];
 
-function Sidebar() {
+function Sidebar({ isChatOpen, setIsChatOpen }) {
   const location = useLocation();
   const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
@@ -75,6 +77,7 @@ function Sidebar() {
             alignItems: isExpanded ? "flex-start" : "center",
             paddingLeft: isExpanded ? "20px" : "0",
             width: "100%",
+            flexShrink: 0,
           }}
         >
           <div
@@ -115,7 +118,8 @@ function Sidebar() {
           justifyContent: isMobile ? "space-around" : "flex-start",
           alignItems: isMobile ? "center" : "stretch",
           gap: isMobile ? "0" : "8px",
-          overflow: "hidden",
+          overflowY: isMobile ? "visible" : "auto",
+          overflowX: "hidden",
         }}
       >
         {navItems.map(({ path, label, icon: Icon }) => (
@@ -147,6 +151,7 @@ function Sidebar() {
                 isMobile && isActive ? "2px solid var(--accent)" : "none",
               width: "100%",
               gap: isMobile ? "4px" : "0",
+              flexShrink: 0,
             })}
           >
             <div
@@ -173,29 +178,102 @@ function Sidebar() {
             </span>
           </NavLink>
         ))}
+
+        {isMobile && (
+          <button
+            onClick={() => setIsChatOpen(!isChatOpen)}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "8px",
+              borderRadius: "var(--radius-sm)",
+              background: "transparent",
+              border: "none",
+              color: isChatOpen ? "var(--accent)" : "var(--text-secondary)",
+              cursor: "pointer",
+              width: "100%",
+              gap: "4px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <MessageSquare 
+                size={20} 
+                style={{ animation: "breathe 2s infinite ease-in-out" }} 
+              />
+            </div>
+            <span style={{ fontSize: "10px", fontWeight: "500" }}>
+              AI Asistan
+            </span>
+          </button>
+        )}
       </nav>
 
-      {!isMobile && isExpanded && (
+      {!isMobile && (
         <div
           className="sidebar-footer"
           style={{
-            padding: "20px",
+            padding: "20px 12px",
             borderTop: "1px solid var(--border)",
-            fontSize: "10px",
-            color: "var(--text-muted)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            flexShrink: 0,
+            background: "var(--bg-card)",
           }}
         >
-          <div style={{ color: "var(--accent)", fontWeight: "700" }}>
-            KOBI-AI
-          </div>
-          <div style={{ marginTop: "2px" }}>Akıllı Operasyon Merkezi</div>
+          <button
+            onClick={() => setIsChatOpen(!isChatOpen)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: isExpanded ? "flex-start" : "center",
+              width: "100%",
+              padding: "12px",
+              background: isChatOpen
+                ? "var(--accent)"
+                : "rgba(245, 158, 11, 0.1)",
+              color: isChatOpen ? "#000" : "var(--accent)",
+              border: isChatOpen ? "none" : "1px solid rgba(245, 158, 11, 0.2)",
+              borderRadius: "var(--radius-sm)",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <MessageSquare 
+              size={18} 
+              style={{ flexShrink: 0, animation: "breathe 2s infinite ease-in-out" }} 
+            />
+            <span
+              style={{
+                marginLeft: "12px",
+                fontSize: "14px",
+                fontWeight: "600",
+                opacity: isExpanded ? 1 : 0,
+                display: isExpanded ? "block" : "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              KOBİ-AI Asistan
+            </span>
+          </button>
         </div>
       )}
+      <style>{`
+        @keyframes breathe {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.1); opacity: 0.7; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </aside>
   );
 }
 
 function App() {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   return (
     <BrowserRouter>
       <div
@@ -207,7 +285,7 @@ function App() {
           background: "var(--bg)",
         }}
       >
-        <Sidebar />
+        <Sidebar isChatOpen={isChatOpen} setIsChatOpen={setIsChatOpen} />
         <main
           className="main-content"
           style={{
@@ -225,6 +303,11 @@ function App() {
             <Route path="/inventory" element={<Inventory />} />
           </Routes>
         </main>
+
+        <ChatAssistant
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+        />
       </div>
     </BrowserRouter>
   );
