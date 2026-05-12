@@ -21,22 +21,38 @@ const Dashboard = () => {
 
   const aiUnavailableMessage = (data) => {
     if (!data?.ai_unavailable) return "";
-    return data.ai_error || data.summary || "Gemini yanıtı alınamadı.";
+    return data.ai_error || data.summary || "AI yanıtı alınamadı.";
   };
 
-  const loadSales = async () => {
+  const loadSales = async (forceRefresh = false) => {
     setSalesLoading(true);
     setSalesError("");
     try {
+      if (!forceRefresh) {
+        const cachedSales = sessionStorage.getItem("cache_sales");
+        const cachedDemand = sessionStorage.getItem("cache_demand");
+        if (cachedSales) {
+          setSalesAnalytics(JSON.parse(cachedSales));
+          if (cachedDemand) {
+            setDemandForecast(JSON.parse(cachedDemand));
+          }
+          setSalesLoading(false);
+          return; // Cache'de varsa API'ye gitmeden işlemi bitir
+        }
+      }
+
       const analytics = await getSalesAnalytics();
       setSalesAnalytics(analytics);
+      sessionStorage.setItem("cache_sales", JSON.stringify(analytics)); // Cache'i güncelle
 
       try {
         const forecast = await getDemandForecast();
         setDemandForecast(forecast);
+        sessionStorage.setItem("cache_demand", JSON.stringify(forecast)); // Cache'i güncelle
       } catch (forecastError) {
         setDemandForecast(null);
-        console.warn("Gemini talep tahmini alınamadı:", forecastError);
+        sessionStorage.removeItem("cache_demand");
+        console.warn("AI talep tahmini alınamadı:", forecastError);
       }
     } catch (e) {
       setSalesError(e.message || "Satış analizi alınamadı.");
@@ -45,12 +61,22 @@ const Dashboard = () => {
     }
   };
 
-  const loadDepletion = async () => {
+  const loadDepletion = async (forceRefresh = false) => {
     setDepletionLoading(true);
     setDepletionError("");
     try {
+      if (!forceRefresh) {
+        const cached = sessionStorage.getItem("cache_depletion");
+        if (cached) {
+          setDepletionForecast(JSON.parse(cached));
+          setDepletionLoading(false);
+          return; // Cache'de varsa API'ye gitmeden işlemi bitir
+        }
+      }
+
       const data = await getDepletionForecast();
       setDepletionForecast(data);
+      sessionStorage.setItem("cache_depletion", JSON.stringify(data)); // Cache'i güncelle
     } catch (e) {
       setDepletionError(e.message || "Stok tükendi tahmini alınamadı.");
     } finally {
@@ -58,12 +84,24 @@ const Dashboard = () => {
     }
   };
 
-  const loadCargo = async () => {
+  const loadCargo = async (forceRefresh = false) => {
     setCargoLoading(true);
     setCargoError("");
     try {
+      if (!forceRefresh) {
+        const cached = sessionStorage.getItem("cache_cargo");
+        if (cached) {
+          setCargoRecommendation(JSON.parse(cached));
+          setCargoLoading(false);
+          return; // Cache'de varsa API'ye gitmeden işlemi bitir
+        }
+      }
+
       const data = await recommendCarrier(10.0, "balanced");
       setCargoRecommendation(data || null);
+      if (data) {
+        sessionStorage.setItem("cache_cargo", JSON.stringify(data)); // Cache'i güncelle
+      }
     } catch (e) {
       setCargoError(e.message || "Kargo optimizasyonu alınamadı.");
     } finally {
@@ -72,7 +110,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    // Üç AI endpoint’ini aynı anda tetiklemek ücretsiz Gemini kotasında 429 üretir; sırayla yükle.
+    // Üç AI endpoint’ini aynı anda tetiklemek ücretsiz AI kotasında 429 üretir; sırayla yükle.
     let cancelled = false;
     const gap = () => new Promise((r) => setTimeout(r, 350));
     (async () => {
@@ -106,7 +144,7 @@ const Dashboard = () => {
   const salesMessage = (() => {
     if (salesLoading) return "Analiz yapılıyor...";
     if (salesError) return salesError;
-    if (salesAIError) return `Gemini yanıtı alınamadı: ${salesAIError}`;
+    if (salesAIError) return `AI yanıtı alınamadı: ${salesAIError}`;
     if (topDemandForecast) {
       return `${topDemandForecast.product_name}: ${topDemandForecast.next_week_estimate}. ${topDemandForecast.action}`;
     }
@@ -127,7 +165,7 @@ const Dashboard = () => {
   const stockMessage = (() => {
     if (depletionLoading) return "Tahmin hesaplanıyor...";
     if (depletionError) return depletionError;
-    if (stockAIError) return `Gemini yanıtı alınamadı: ${stockAIError}`;
+    if (stockAIError) return `AI yanıtı alınamadı: ${stockAIError}`;
     if (!urgentStock) return "Veri henüz yüklenmedi.";
 
     const unit = urgentStock.unit || "adet";
@@ -143,7 +181,7 @@ const Dashboard = () => {
   const cargoMessage = (() => {
     if (cargoLoading) return "Kargo firmaları değerlendiriliyor...";
     if (cargoError) return cargoError;
-    if (cargoAIError) return `Gemini yanıtı alınamadı: ${cargoAIError}`;
+    if (cargoAIError) return `AI yanıtı alınamadı: ${cargoAIError}`;
     if (!cargoChoice) return "Veri henüz yüklenmedi.";
 
     return `${cargoChoice.carrier} önerildi. ${cargoChoice.reason} Ortalama teslimat: ${cargoChoice.avg_delivery_days} iş günü. Tahmini maliyet: ₺${cargoChoice.estimated_cost}.`;
@@ -192,7 +230,7 @@ const Dashboard = () => {
               </h3>
             </div>
             <button
-              onClick={loadDepletion}
+              onClick={() => loadDepletion(true)}
               disabled={depletionLoading}
               style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: "4px" }}
               title="Yenile"
@@ -211,7 +249,7 @@ const Dashboard = () => {
               <>
                 <div className="stat-value" style={{ fontSize: "20px" }}>
                   {stockAIError
-                    ? "Gemini yok"
+                    ? "AI yok"
                     : depletionForecast
                     ? `${depletionForecast.summary.critical} Kritik / ${depletionForecast.summary.warning} Uyarı`
                     : "—"}
@@ -256,7 +294,7 @@ const Dashboard = () => {
               </h3>
             </div>
             <button
-              onClick={loadCargo}
+              onClick={() => loadCargo(true)}
               disabled={cargoLoading}
               style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: "4px" }}
               title="Yenile"
@@ -274,7 +312,7 @@ const Dashboard = () => {
             ) : (
               <>
                 <div className="stat-value" style={{ fontSize: "20px" }}>
-                  {cargoAIError ? "Gemini yok" : cargoChoice ? cargoChoice.carrier : "—"}
+                  {cargoAIError ? "AI yok" : cargoChoice ? cargoChoice.carrier : "—"}
                 </div>
                 <p className="stat-label" style={{ marginTop: "6px" }}>
                   {cargoAIError
@@ -315,7 +353,7 @@ const Dashboard = () => {
               </h3>
             </div>
             <button
-              onClick={loadSales}
+              onClick={() => loadSales(true)}
               disabled={salesLoading}
               style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: "4px" }}
               title="Yenile"
@@ -334,7 +372,7 @@ const Dashboard = () => {
               <>
                 <div className="stat-value" style={{ fontSize: "20px" }}>
                   {salesAIError
-                    ? "Gemini yok"
+                    ? "AI yok"
                     : topDemandForecast
                     ? topDemandForecast.urgency?.toUpperCase()
                     : topSalesProduct
