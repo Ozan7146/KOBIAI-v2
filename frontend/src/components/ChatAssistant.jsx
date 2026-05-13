@@ -131,7 +131,7 @@ export default function ChatAssistant({ isOpen, onClose }) {
                 color: "var(--text-primary)",
               }}
             >
-              KOBİ-AI Asistan
+              Q-AI Asistan
             </h3>
             <span
               style={{

@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from "react";
-import StockAlertEmailModal from './StockAlertEmailModal'
+import StockAlertEmailModal from "./StockAlertEmailModal";
 import {
-    RefreshCw, TrendingUp, AlertTriangle, Package,
-    Plus, X, BarChart3, PieChart, Mail,
+  RefreshCw,
+  TrendingUp,
+  AlertTriangle,
+  Package,
+  Plus,
+  X,
+  BarChart3,
+  PieChart,
+  Mail,
 } from "lucide-react";
 import {
-    getInventoryAlerts,
-    getInventorySummary,
-    getTopSelling,
-    restockProduct,
+  getInventoryAlerts,
+  getInventorySummary,
+  getTopSelling,
+  restockProduct,
 } from "./client";
 
 const ALERT_LABELS = {
@@ -129,22 +136,49 @@ function RestockDrawer({ product, onClose, onDone, isMobile }) {
                 fontWeight: "700",
                 fontSize: "16px",
                 color: "var(--text-primary)",
-                marginBottom: "12px"
+                marginBottom: "12px",
               }}
             >
               {product.product_name}
             </div>
-            
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Mevcut Stok:</span>
-              <span className="mono" style={{ color: "var(--text-primary)", fontWeight: "600" }}>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "8px",
+              }}
+            >
+              <span
+                style={{ fontSize: "13px", color: "var(--text-secondary)" }}
+              >
+                Mevcut Stok:
+              </span>
+              <span
+                className="mono"
+                style={{ color: "var(--text-primary)", fontWeight: "600" }}
+              >
                 {product.current_stock} {product.unit}
               </span>
             </div>
-            
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Önerilen Takviye:</span>
-              <span className="mono" style={{ color: "var(--accent)", fontWeight: "600" }}>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span
+                style={{ fontSize: "13px", color: "var(--text-secondary)" }}
+              >
+                Önerilen Takviye:
+              </span>
+              <span
+                className="mono"
+                style={{ color: "var(--accent)", fontWeight: "600" }}
+              >
                 +{product.suggested_reorder_qty}
               </span>
             </div>
@@ -167,7 +201,7 @@ function RestockDrawer({ product, onClose, onDone, isMobile }) {
                 fontSize: "20px",
                 height: "56px",
                 textAlign: "center",
-                width: "100%"
+                width: "100%",
               }}
             />
           </div>
@@ -224,8 +258,7 @@ export default function Inventory() {
   const [loading, setLoading] = useState(true);
   const [restocking, setRestocking] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [emailProduct, setEmailProduct] = useState(null)
-
+  const [emailProduct, setEmailProduct] = useState(null);
 
   const load = () => {
     setLoading(true);
@@ -276,7 +309,11 @@ export default function Inventory() {
               Akıllı stok analizi ve depo verimliliği
             </p>
           </div>
-          <button className="btn btn-ghost" onClick={load} style={{ padding: "10px" }}>
+          <button
+            className="btn btn-ghost"
+            onClick={load}
+            style={{ padding: "10px" }}
+          >
             <RefreshCw size={18} />
           </button>
         </div>
@@ -289,8 +326,13 @@ export default function Inventory() {
           onDone={load}
           isMobile={isMobile}
         />
-          )}
-          {emailProduct && <StockAlertEmailModal product={emailProduct} onClose={() => setEmailProduct(null)} />}
+      )}
+      {emailProduct && (
+        <StockAlertEmailModal
+          product={emailProduct}
+          onClose={() => setEmailProduct(null)}
+        />
+      )}
 
       {summary && (
         <div
@@ -406,7 +448,7 @@ export default function Inventory() {
                 background: "var(--red-bg)",
                 color: "var(--red)",
                 border: "none",
-                padding: "6px 12px"
+                padding: "6px 12px",
               }}
             >
               {alerts.length} Ürün
@@ -425,7 +467,7 @@ export default function Inventory() {
                   fontSize: "14px",
                   background: "var(--bg)",
                   borderRadius: "12px",
-                  border: "1px dashed var(--border)"
+                  border: "1px dashed var(--border)",
                 }}
               >
                 <div style={{ fontSize: "40px", marginBottom: "16px" }}>✅</div>
@@ -468,7 +510,7 @@ export default function Inventory() {
                           fontWeight: "700",
                           fontSize: "15px",
                           color: "var(--text-primary)",
-                          marginBottom: "4px"
+                          marginBottom: "4px",
                         }}
                       >
                         {a.product_name}
@@ -477,24 +519,24 @@ export default function Inventory() {
                         {a.category} · {a.supplier}
                       </div>
                     </div>
-                          <div style={{ display: "flex", gap: "6px" }}>
-                              <button
-                                  className="btn btn-primary btn-sm"
-                                  onClick={() => setRestocking(a)}
-                                  style={{ padding: "8px" }}
-                                  title="Stok ekle"
-                              >
-                                  <Plus size={18} />
-                              </button>
-                              <button
-                                  className="btn btn-ghost btn-sm"
-                                  onClick={() => setEmailProduct(a)}
-                                  style={{ padding: "8px" }}
-                                  title="Tedarikçiye mail gönder"
-                              >
-                                  <Mail size={16} />
-                              </button>
-                          </div>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => setRestocking(a)}
+                        style={{ padding: "8px" }}
+                        title="Stok ekle"
+                      >
+                        <Plus size={18} />
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setEmailProduct(a)}
+                        style={{ padding: "8px" }}
+                        title="Tedarikçiye mail gönder"
+                      >
+                        <Mail size={16} />
+                      </button>
+                    </div>
                   </div>
                   <div
                     style={{
@@ -568,7 +610,9 @@ export default function Inventory() {
               </div>
               Trend Ürünler
             </div>
-            <span className="tag" style={{ padding: "6px 12px" }}>30 Günlük</span>
+            <span className="tag" style={{ padding: "6px 12px" }}>
+              30 Günlük
+            </span>
           </div>
 
           <div
@@ -603,7 +647,13 @@ export default function Inventory() {
                       {i + 1}
                     </span>
                     <div>
-                      <div style={{ fontWeight: "700", fontSize: "15px", marginBottom: "2px" }}>
+                      <div
+                        style={{
+                          fontWeight: "700",
+                          fontSize: "15px",
+                          marginBottom: "2px",
+                        }}
+                      >
                         {p.name}
                       </div>
                       <div className="text-muted" style={{ fontSize: "12px" }}>
@@ -618,7 +668,7 @@ export default function Inventory() {
                         fontWeight: "800",
                         color: "var(--text-primary)",
                         fontSize: "18px",
-                        marginBottom: "2px"
+                        marginBottom: "2px",
                       }}
                     >
                       {p.sales_last_30_days}

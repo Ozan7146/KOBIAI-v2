@@ -64,7 +64,7 @@ function Sidebar({ isChatOpen, setIsChatOpen }) {
         display: "flex",
         flexDirection: isMobile ? "row" : "column",
         boxShadow: isExpanded ? "10px 0 30px rgba(0,0,0,0.3)" : "none",
-        padding: isMobile ? "0 10px" : "0",
+        padding: isMobile ? "0" : "0",
       }}
     >
       {!isMobile && (
@@ -89,7 +89,7 @@ function Sidebar({ isChatOpen, setIsChatOpen }) {
               fontFamily: "var(--font-display)",
             }}
           >
-            {isExpanded ? "KOBİ·AI" : "K·AI"}
+            {isExpanded ? "Qtech·AI" : "Q·AI"}
           </div>
           <div
             style={{
@@ -112,14 +112,15 @@ function Sidebar({ isChatOpen, setIsChatOpen }) {
         className="sidebar-nav"
         style={{
           flex: 1,
-          padding: isMobile ? "0" : "16px 12px",
+          padding: isMobile ? "0 4px" : "16px 12px",
           display: "flex",
           flexDirection: isMobile ? "row" : "column",
-          justifyContent: isMobile ? "space-around" : "flex-start",
+          justifyContent: isMobile ? "flex-start" : "flex-start",
           alignItems: isMobile ? "center" : "stretch",
-          gap: isMobile ? "0" : "8px",
+          gap: isMobile ? "4px" : "8px",
           overflowY: isMobile ? "visible" : "auto",
-          overflowX: "hidden",
+          overflowX: isMobile ? "auto" : "hidden",
+          WebkitOverflowScrolling: "touch",
         }}
       >
         {navItems.map(({ path, label, icon: Icon }) => (
@@ -137,7 +138,7 @@ function Sidebar({ isChatOpen, setIsChatOpen }) {
                 : isExpanded
                   ? "flex-start"
                   : "center",
-              padding: isMobile ? "8px" : "12px",
+              padding: isMobile ? "8px 4px" : "12px",
               borderRadius: "var(--radius-sm)",
               textDecoration: "none",
               transition: "all 0.2s ease",
@@ -149,9 +150,10 @@ function Sidebar({ isChatOpen, setIsChatOpen }) {
                   : "none",
               borderBottom:
                 isMobile && isActive ? "2px solid var(--accent)" : "none",
-              width: "100%",
+              width: isMobile ? "auto" : "100%",
+              flex: isMobile ? "1 0 auto" : "none",
+              minWidth: isMobile ? "70px" : "auto",
               gap: isMobile ? "4px" : "0",
-              flexShrink: 0,
             })}
           >
             <div
@@ -172,6 +174,8 @@ function Sidebar({ isChatOpen, setIsChatOpen }) {
                 opacity: isExpanded || isMobile ? 1 : 0,
                 display: isExpanded || isMobile ? "block" : "none",
                 whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
               }}
             >
               {label}
@@ -187,23 +191,33 @@ function Sidebar({ isChatOpen, setIsChatOpen }) {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              padding: "8px",
+              padding: "8px 4px",
               borderRadius: "var(--radius-sm)",
               background: "transparent",
               border: "none",
               color: isChatOpen ? "var(--accent)" : "var(--text-secondary)",
               cursor: "pointer",
-              width: "100%",
+              width: isMobile ? "auto" : "100%",
+              flex: isMobile ? "1 0 auto" : "none",
+              minWidth: isMobile ? "70px" : "auto",
               gap: "4px",
             }}
           >
             <div style={{ display: "flex", justifyContent: "center" }}>
-              <MessageSquare 
-                size={20} 
-                style={{ animation: "breathe 2s infinite ease-in-out" }} 
+              <MessageSquare
+                size={20}
+                style={{ animation: "breathe 2s infinite ease-in-out" }}
               />
             </div>
-            <span style={{ fontSize: "10px", fontWeight: "500" }}>
+            <span
+              style={{
+                fontSize: "10px",
+                fontWeight: "500",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+              }}
+            >
               AI Asistan
             </span>
           </button>
@@ -241,9 +255,12 @@ function Sidebar({ isChatOpen, setIsChatOpen }) {
               transition: "all 0.2s ease",
             }}
           >
-            <MessageSquare 
-              size={18} 
-              style={{ flexShrink: 0, animation: "breathe 2s infinite ease-in-out" }} 
+            <MessageSquare
+              size={18}
+              style={{
+                flexShrink: 0,
+                animation: "breathe 2s infinite ease-in-out",
+              }}
             />
             <span
               style={{
@@ -255,7 +272,7 @@ function Sidebar({ isChatOpen, setIsChatOpen }) {
                 whiteSpace: "nowrap",
               }}
             >
-              KOBİ-AI Asistan
+              Q-AI Asistan
             </span>
           </button>
         </div>
