@@ -13,6 +13,7 @@ KOBİ'lerin sipariş, stok ve kargo süreçlerini tek ekrandan yapay zeka destek
 KOBIAI/
 ├── backend/
 │   ├── main.py                  # FastAPI uygulama girişi
+    ├── ai_client.py            
 │   ├── requirements.txt
 │   ├── data/
 │   │   └── store.py             # In-memory veri deposu (ürünler, siparişler, kargo)
@@ -22,17 +23,21 @@ KOBIAI/
 │       ├── orders.py            # CRUD /api/orders/*
 │       ├── cargo.py             # CRUD /api/cargo/*
 │       ├── inventory.py         # GET /api/inventory/*
-│       └── ai.py                # POST /api/ai/chat, GET /api/ai/insights
+        ├── chat.py              # POST /api/ai/chat/*
+│       └── ai.py                # GET /api/ai/insights/*, GET /api/ai/sales-analytics/*, GET /api/ai/forcast/*
 └── frontend/
     ├── index.html
     ├── package.json
     ├── vite.config.js           # /api → localhost:8000 proxy
     └── src/
+        ├── components/
+            └── ChatAssistant.jsx
         ├── main.jsx
         ├── App.jsx              # Router + Sidebar
         ├── client.js            # Tüm API çağrıları
         ├── index.css            # Tema & bileşen stilleri
         ├── Dashboard.jsx
+        ├── StockAlertEmailModel.jsx
         ├── Orders.jsx
         ├── Products.jsx
         ├── Cargo.jsx
@@ -151,6 +156,9 @@ GEMINI_MODEL=gemini-1.5-flash
 | GET | `/api/cargo/{tracking}` | Kargo sorgula |
 | GET | `/api/cargo/order/{order_id}` | Siparişe göre kargo |
 | GET | `/api/cargo/delayed` | Gecikmeli kargolar |
+| GET | `/api/cargo/recommend` | Önerilen kargolar |
+| GET | `/api/cargo/carriers/performance` | Kargo performansı |
+| GET | `/api/cargo/delay-email-draft` | Gecikme maili |
 | PUT | `/api/cargo/{tracking}/status` | Kargo durumu güncelle |
 
 ### Envanter
@@ -160,12 +168,21 @@ GEMINI_MODEL=gemini-1.5-flash
 | GET | `/api/inventory/summary` | Özet istatistik |
 | GET | `/api/inventory/top-selling` | En çok satanlar (`?limit=5`) |
 | POST | `/api/inventory/restock/{id}` | Stok ekle (`?quantity=50`) |
+| GET | `/api/inventory/restock-email-draft` | Stok tükenme maili |
+| GET | `/api/inventory/depletion-forcast` | Tükenme tahmini |
 
 ### AI
 | Method | URL | Açıklama |
 |--------|-----|----------|
-| POST | `/api/ai/chat` | AI asistanla sohbet |
 | GET | `/api/ai/insights` | Otomatik AI içgörüleri |
+| GET | `/api/ai/sales-analytics` | Otomatik AI satış analizi |
+| GET | `/api/ai/forcast` | Otomatik AI Talep tahmini |
+
+### Chat
+| Method | URL | Açıklama |
+|--------|-----|----------|
+| POST | `/api/ai/chat` | AI asistanla sohbet |
+
 
 ---
 
