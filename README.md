@@ -1,9 +1,9 @@
-# KOBİ AI — Yapay Zeka Destekli Operasyon Yönetimi
+# Qtech AI — Yapay Zeka Destekli Operasyon Yönetimi
 
 > YZTA 5. Dönem AI Hackathon Projesi  
 > **Backend:** FastAPI + Python | **Frontend:** React + Vite
 
-KOBİ'lerin sipariş, stok ve kargo süreçlerini tek ekrandan yapay zeka destekli olarak yönetmesini sağlayan platform.
+Sipariş, Stok ve Kargo süreçlerini tek ekrandan yapay zeka destekli olarak yönetmesini sağlayan platform.
 
 ---
 
@@ -13,6 +13,7 @@ KOBİ'lerin sipariş, stok ve kargo süreçlerini tek ekrandan yapay zeka destek
 KOBIAI/
 ├── backend/
 │   ├── main.py                  # FastAPI uygulama girişi
+    ├── ai_client.py            
 │   ├── requirements.txt
 │   ├── data/
 │   │   └── store.py             # In-memory veri deposu (ürünler, siparişler, kargo)
@@ -22,17 +23,21 @@ KOBIAI/
 │       ├── orders.py            # CRUD /api/orders/*
 │       ├── cargo.py             # CRUD /api/cargo/*
 │       ├── inventory.py         # GET /api/inventory/*
-│       └── ai.py                # POST /api/ai/chat, GET /api/ai/insights
+        ├── chat.py              # POST /api/ai/chat/*
+│       └── ai.py                # GET /api/ai/insights/*, GET /api/ai/sales-analytics/*, GET /api/ai/forcast/*
 └── frontend/
     ├── index.html
     ├── package.json
     ├── vite.config.js           # /api → localhost:8000 proxy
     └── src/
+        ├── components/
+            └── ChatAssistant.jsx
         ├── main.jsx
         ├── App.jsx              # Router + Sidebar
         ├── client.js            # Tüm API çağrıları
         ├── index.css            # Tema & bileşen stilleri
         ├── Dashboard.jsx
+        ├── StockAlertEmailModel.jsx
         ├── Orders.jsx
         ├── Products.jsx
         ├── Cargo.jsx
@@ -87,30 +92,30 @@ Vite, `/api/*` isteklerini otomatik olarak `localhost:8000`'e yönlendirir.
 
 ## 🤖 AI Asistan Kurulumu (Opsiyonel)
 
-AI chat ve analiz özellikleri için Google AI Studio **Gemini** API anahtarı gereklidir (`GEMINI_API_KEY` veya `GOOGLE_API_KEY`).
+AI chat ve analiz özellikleri için **GROQ** API anahtarı gereklidir (`GROQ_API_KEY` veya `GROQ_API_KEY`).
 
 ### Seçenek A — Environment Variable (Önerilen)
 ```bash
-export GEMINI_API_KEY="..."
-export GEMINI_MODEL="gemini-1.5-flash"
+export GROQ_API_KEY="..."
+export GROQ_MODEL="llama-3.3-70b-versatile"
 # İsteğe bağlı — 429 / kota patlamalarını yumuşatır:
-# export GEMINI_MAX_RETRIES=6
-# export GEMINI_REQUEST_GAP_SECONDS=0.4
+# export GROQ_MAX_RETRIES=5
+# export GROQ_REQUEST_TIMEOUT=60
 ```
 
 ### Seçenek B — `.env` dosyası
 ```bash
 # backend/.env
-GEMINI_API_KEY=...
-GEMINI_MODEL=gemini-1.5-flash
-# GEMINI_MAX_RETRIES=6
-# GEMINI_REQUEST_GAP_SECONDS=0.4
+GROQ_API_KEY=...
+GROQ_MODEL=llama-3.3-70b-versatile
+# GROQ_MAX_RETRIES=5
+# GROQ_REQUEST_TIMEOUT=60
 ```
 
 > API anahtarı olmadan tüm diğer özellikler çalışmaya devam eder.  
-> AI chat ve AI destekli analiz endpoint'leri Gemini yanıtı alamazsa yerel fallback verisi döner.
+> AI chat ve AI destekli analiz endpoint'leri GROQ yanıtı alamazsa yerel fallback verisi döner.
 
-**429 / kota:** Dashboard açılışında birden fazla AI endpoint’i aynı anda çağrılabiliyordu; frontend bu istekleri sıraya alır, backend ise Gemini çağrılarını tek sıraya koyar, istekler arası kısa boşluk ve `429` / `503` yanıtlarında API’nin verdiği süre veya üstel geri deneme uygular. Ücretsiz planda `gemini-2.0-flash` için kota `0` görünebiliyor; varsayılan model `gemini-1.5-flash` olarak ayarlıdır, gerekirse `GEMINI_MODEL` ile değiştirin.
+**429 / kota:** Dashboard açılışında birden fazla AI endpoint’i aynı anda çağrılabiliyordu; frontend bu istekleri sıraya alır, backend ise GROQ çağrılarını tek sıraya koyar, istekler arası kısa boşluk ve `429` / `503` yanıtlarında API’nin verdiği süre veya üstel geri deneme uygular. Ücretsiz planda `llama-3.3-70b-versatile` için kota `0` görünebiliyor; varsayılan model `llama-3.3-70b-versatile` olarak ayarlıdır, gerekirse `GROQ_MODEL` ile değiştirin.
 
 ---
 
@@ -151,6 +156,9 @@ GEMINI_MODEL=gemini-1.5-flash
 | GET | `/api/cargo/{tracking}` | Kargo sorgula |
 | GET | `/api/cargo/order/{order_id}` | Siparişe göre kargo |
 | GET | `/api/cargo/delayed` | Gecikmeli kargolar |
+| GET | `/api/cargo/recommend` | Önerilen kargolar |
+| GET | `/api/cargo/carriers/performance` | Kargo performansı |
+| GET | `/api/cargo/delay-email-draft` | Gecikme maili |
 | PUT | `/api/cargo/{tracking}/status` | Kargo durumu güncelle |
 
 ### Envanter
@@ -160,12 +168,21 @@ GEMINI_MODEL=gemini-1.5-flash
 | GET | `/api/inventory/summary` | Özet istatistik |
 | GET | `/api/inventory/top-selling` | En çok satanlar (`?limit=5`) |
 | POST | `/api/inventory/restock/{id}` | Stok ekle (`?quantity=50`) |
+| GET | `/api/inventory/restock-email-draft` | Stok tükenme maili |
+| GET | `/api/inventory/depletion-forcast` | Tükenme tahmini |
 
 ### AI
 | Method | URL | Açıklama |
 |--------|-----|----------|
-| POST | `/api/ai/chat` | AI asistanla sohbet |
 | GET | `/api/ai/insights` | Otomatik AI içgörüleri |
+| GET | `/api/ai/sales-analytics` | Otomatik AI satış analizi |
+| GET | `/api/ai/forcast` | Otomatik AI Talep tahmini |
+
+### Chat
+| Method | URL | Açıklama |
+|--------|-----|----------|
+| POST | `/api/ai/chat` | AI asistanla sohbet |
+
 
 ---
 
@@ -202,7 +219,7 @@ GEMINI_MODEL=gemini-1.5-flash
 - Tek tıkla stok tazeleme
 - En çok satan ürünler analizi
 
-### ✅ AI Asistan (Gemini)
+### ✅ AI Asistan (GROQ)
 - Gerçek zamanlı veri üzerinden sohbet
 - Sipariş, kargo, stok soruları
 - Müşteri bildirim metni üretme
@@ -222,7 +239,7 @@ GEMINI_MODEL=gemini-1.5-flash
 | **Grafikler** | Recharts |
 | **İkonlar** | Lucide React |
 | **Stil** | CSS Variables (custom design system) |
-| **AI** | Google Gemini API (`gemini-1.5-flash` varsayılan; `GEMINI_MODEL`, `GEMINI_MAX_RETRIES`, `GEMINI_REQUEST_GAP_SECONDS`) |
+| **AI** | GROQ API (`llama-3.3-70b-versatile` varsayılan; `GROQ_MODEL`, `GROQ_MAX_RETRIES`, `GROQ_REQUEST_TIMEOUT`) |
 | **HTTP Client** | httpx (backend), fetch (frontend) |
 
 ---
