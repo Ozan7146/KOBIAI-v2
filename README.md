@@ -92,30 +92,30 @@ Vite, `/api/*` isteklerini otomatik olarak `localhost:8000`'e yönlendirir.
 
 ## 🤖 AI Asistan Kurulumu (Opsiyonel)
 
-AI chat ve analiz özellikleri için Google AI Studio **Gemini** API anahtarı gereklidir (`GEMINI_API_KEY` veya `GOOGLE_API_KEY`).
+AI chat ve analiz özellikleri için **GROQ** API anahtarı gereklidir (`GROQ_API_KEY` veya `GROQ_API_KEY`).
 
 ### Seçenek A — Environment Variable (Önerilen)
 ```bash
-export GEMINI_API_KEY="..."
-export GEMINI_MODEL="gemini-1.5-flash"
+export GROQ_API_KEY="..."
+export GROQ_MODEL="llama-3.3-70b-versatile"
 # İsteğe bağlı — 429 / kota patlamalarını yumuşatır:
-# export GEMINI_MAX_RETRIES=6
-# export GEMINI_REQUEST_GAP_SECONDS=0.4
+# export GROQ_MAX_RETRIES=5
+# export GROQ_REQUEST_TIMEOUT=60
 ```
 
 ### Seçenek B — `.env` dosyası
 ```bash
 # backend/.env
-GEMINI_API_KEY=...
-GEMINI_MODEL=gemini-1.5-flash
-# GEMINI_MAX_RETRIES=6
-# GEMINI_REQUEST_GAP_SECONDS=0.4
+GROQ_API_KEY=...
+GROQ_MODEL=llama-3.3-70b-versatile
+# GROQ_MAX_RETRIES=5
+# GROQ_REQUEST_TIMEOUT=60
 ```
 
 > API anahtarı olmadan tüm diğer özellikler çalışmaya devam eder.  
-> AI chat ve AI destekli analiz endpoint'leri Gemini yanıtı alamazsa yerel fallback verisi döner.
+> AI chat ve AI destekli analiz endpoint'leri GROQ yanıtı alamazsa yerel fallback verisi döner.
 
-**429 / kota:** Dashboard açılışında birden fazla AI endpoint’i aynı anda çağrılabiliyordu; frontend bu istekleri sıraya alır, backend ise Gemini çağrılarını tek sıraya koyar, istekler arası kısa boşluk ve `429` / `503` yanıtlarında API’nin verdiği süre veya üstel geri deneme uygular. Ücretsiz planda `gemini-2.0-flash` için kota `0` görünebiliyor; varsayılan model `gemini-1.5-flash` olarak ayarlıdır, gerekirse `GEMINI_MODEL` ile değiştirin.
+**429 / kota:** Dashboard açılışında birden fazla AI endpoint’i aynı anda çağrılabiliyordu; frontend bu istekleri sıraya alır, backend ise GROQ çağrılarını tek sıraya koyar, istekler arası kısa boşluk ve `429` / `503` yanıtlarında API’nin verdiği süre veya üstel geri deneme uygular. Ücretsiz planda `llama-3.3-70b-versatile` için kota `0` görünebiliyor; varsayılan model `llama-3.3-70b-versatile` olarak ayarlıdır, gerekirse `GROQ_MODEL` ile değiştirin.
 
 ---
 
@@ -219,7 +219,7 @@ GEMINI_MODEL=gemini-1.5-flash
 - Tek tıkla stok tazeleme
 - En çok satan ürünler analizi
 
-### ✅ AI Asistan (Gemini)
+### ✅ AI Asistan (GROQ)
 - Gerçek zamanlı veri üzerinden sohbet
 - Sipariş, kargo, stok soruları
 - Müşteri bildirim metni üretme
@@ -239,7 +239,7 @@ GEMINI_MODEL=gemini-1.5-flash
 | **Grafikler** | Recharts |
 | **İkonlar** | Lucide React |
 | **Stil** | CSS Variables (custom design system) |
-| **AI** | Google Gemini API (`gemini-1.5-flash` varsayılan; `GEMINI_MODEL`, `GEMINI_MAX_RETRIES`, `GEMINI_REQUEST_GAP_SECONDS`) |
+| **AI** | GROQ API (`llama-3.3-70b-versatile` varsayılan; `GROQ_MODEL`, `GROQ_MAX_RETRIES`, `GROQ_REQUEST_TIMEOUT`) |
 | **HTTP Client** | httpx (backend), fetch (frontend) |
 
 ---
