@@ -9,7 +9,7 @@ export default function ChatAssistant({ isOpen, onClose }) {
     {
       role: "ai",
       content:
-        "Merhaba! Ben KOBİ-AI Asistan. Sipariş, stok veya kargolarla ilgili güncel verilere sahibim. Sana nasıl yardımcı olabilirim?",
+        "Merhaba! Ben Q-AI Asistan. Sipariş, stok veya kargolarla ilgili güncel verilere sahibim. Sana nasıl yardımcı olabilirim?",
     },
   ]);
   const messagesEndRef = useRef(null);
