@@ -7,9 +7,8 @@ from fastapi import APIRouter, HTTPException
 from data.store import ORDERS, PRODUCTS, CARGO
 from ai_client import (
     AIClientError,
-    gemini_api_key as _gemini_api_key,
-    ask_gemini_json,
-    ask_gemini_text,
+    ask_ai_json,
+    ask_ai_text,
 )
 
 router = APIRouter()
@@ -46,7 +45,7 @@ def _local_forecast_fallback(products: list[dict], reason: str) -> dict:
 
     return {
         "forecasts": forecasts,
-        "summary": f"Gemini çağrısı yapılamadı; yerel satış verisine göre tahmin üretildi. Sebep: {reason}",
+        "summary": f"AI çağrısı yapılamadı; yerel satış verisine göre tahmin üretildi. Sebep: {reason}",
         "ai_request_attempted": True,
         "ai_powered": False,
         "ai_unavailable": True,
@@ -190,20 +189,20 @@ Yanıtı SADECE şu JSON formatında ver:
 }}"""
 
     try:
-        ai_result = await ask_gemini_json(
+        ai_result = await ask_ai_json(
             "Sen KOBİ'ler için çalışan bir sipariş analitiği yapay zekasısın. Türkçe ve geçerli JSON döndür.",
             prompt,
         )
         ai_result.setdefault("period", "son_4_hafta")
         ai_result["ai_request_attempted"] = True
         ai_result["ai_powered"] = True
-        ai_result["source"] = "gemini"
+        ai_result["source"] = "groq"
         return ai_result
     except AIClientError as exc:
         return {
             "period": "son_4_hafta",
             "products": result,
-            "summary": f"Gemini sipariş analitiği alınamadı; yerel trend verisi gösteriliyor. Sebep: {exc}",
+            "summary": f"AI sipariş analitiği alınamadı; yerel trend verisi gösteriliyor. Sebep: {exc}",
             "ai_request_attempted": True,
             "ai_powered": False,
             "ai_unavailable": True,
@@ -247,7 +246,7 @@ Yanıtını SADECE aşağıdaki JSON formatında ver — başka hiçbir metin ek
 }}"""
 
     try:
-        ai_result = await ask_gemini_json(
+        ai_result = await ask_ai_json(
             "Sen bir KOBİ satış analisti yapay zekasısın. Türkçe, kısa ve net yanıt ver. Her zaman geçerli JSON döndür.",
             prompt,
             max_tokens=1024,
@@ -265,6 +264,6 @@ Yanıtını SADECE aşağıdaki JSON formatında ver — başka hiçbir metin ek
         "products_analyzed": len(products),
         "ai_request_attempted": True,
         "ai_powered": True,
-        "source": "gemini",
+        "source": "groq",
         **ai_result,
     }

@@ -2,7 +2,7 @@ import json
 
 from fastapi import APIRouter, HTTPException
 from data.store import PRODUCTS
-from ai_client import AIClientError, ask_gemini_json
+from ai_client import AIClientError, ask_ai_json
 
 router = APIRouter()
 
@@ -306,7 +306,7 @@ Yanıtı SADECE şu JSON formatında ver:
 }}"""
 
     try:
-        ai_result = await ask_gemini_json(
+        ai_result = await ask_ai_json(
             "Sen KOBİ stok ve talep tahmini yapan bir yapay zekasın. Türkçe, net ve geçerli JSON döndür.",
             prompt,
         )

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from typing import Optional
 from pydantic import BaseModel
-from data.store import PRODUCTS, refresh_stock_alerts
+from data.store import PRODUCTS
 import uuid
 
 router = APIRouter()
@@ -18,8 +18,15 @@ class ProductCreate(BaseModel):
     supplier: str = ""
 
 
-class ProductUpdate(ProductCreate):
-    pass
+class ProductUpdate(BaseModel):
+    name: str
+    category: str
+    price: float
+    stock_quantity: int
+    min_stock_threshold: int = 10
+    unit: str = "adet"
+    description: str = ""
+    supplier: str = ""
 
 
 def _compute_alert(p: dict) -> str:
@@ -33,8 +40,7 @@ def _compute_alert(p: dict) -> str:
 
 @router.get("/categories/list")
 def list_categories():
-    cats = sorted(set(p["category"] for p in PRODUCTS.values()))
-    return cats
+    return sorted(set(p["category"] for p in PRODUCTS.values()))
 
 
 @router.get("/")
@@ -51,14 +57,14 @@ def list_products(alert: Optional[str] = None, category: Optional[str] = None):
 def get_product(product_id: str):
     p = PRODUCTS.get(product_id)
     if not p:
-        raise HTTPException(404, f"Ürün bulunamadı: {product_id}")
+        raise HTTPException(status_code=404, detail=f"Urun bulunamadi: {product_id}")
     return p
 
 
 @router.post("/", status_code=201)
 def create_product(data: ProductCreate):
     new_id = f"PRD-{str(uuid.uuid4())[:6].upper()}"
-    p = data.model_dump()
+    p = data.dict()
     p["id"] = new_id
     p["sales_last_30_days"] = 0
     p["stock_alert"] = _compute_alert(p)
@@ -69,8 +75,8 @@ def create_product(data: ProductCreate):
 @router.put("/{product_id}")
 def update_product(product_id: str, data: ProductUpdate):
     if product_id not in PRODUCTS:
-        raise HTTPException(404, f"Ürün bulunamadı: {product_id}")
-    updated = data.model_dump()
+        raise HTTPException(status_code=404, detail=f"Urun bulunamadi: {product_id}")
+    updated = data.dict()
     updated["id"] = product_id
     updated["sales_last_30_days"] = PRODUCTS[product_id].get("sales_last_30_days", 0)
     updated["stock_alert"] = _compute_alert(updated)
@@ -81,6 +87,6 @@ def update_product(product_id: str, data: ProductUpdate):
 @router.delete("/{product_id}")
 def delete_product(product_id: str):
     if product_id not in PRODUCTS:
-        raise HTTPException(404, f"Ürün bulunamadı: {product_id}")
+        raise HTTPException(status_code=404, detail=f"Urun bulunamadi: {product_id}")
     del PRODUCTS[product_id]
     return {"message": f"{product_id} silindi"}
