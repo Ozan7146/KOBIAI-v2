@@ -14,8 +14,8 @@ load_dotenv(dotenv_path=BASE_DIR / ".env")
 from routers import dashboard, products, orders, cargo, inventory, ai, chat
 
 app = FastAPI(
-    title="KOBİ AI API",
-    description="KOBİ'ler için Yapay Zeka Destekli Operasyon Yönetimi — FastAPI Backend",
+    title="Qtech AI API",
+    description="Q'ler için Yapay Zeka Destekli Operasyon Yönetimi — FastAPI Backend",
     version="1.0.0",
 )
 
@@ -37,7 +37,7 @@ app.include_router(chat.router,      prefix="/api/ai",        tags=["Chat"])
 
 @app.get("/")
 def root():
-    return {"message": "KOBİ AI Backend çalışıyor 🚀", "docs": "/docs"}
+    return {"message": "Qtech AI Backend çalışıyor 🚀", "docs": "/docs"}
 
 @app.get("/health")
 def health():
