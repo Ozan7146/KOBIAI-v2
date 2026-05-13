@@ -3,7 +3,7 @@
 > YZTA 5. Dönem AI Hackathon Projesi  
 > **Backend:** FastAPI + Python | **Frontend:** React + Vite
 
-KOBİ'lerin sipariş, stok ve kargo süreçlerini tek ekrandan yapay zeka destekli olarak yönetmesini sağlayan platform.
+Sipariş, Stok ve Kargo süreçlerini tek ekrandan yapay zeka destekli olarak yönetmesini sağlayan platform.
 
 ---
 
