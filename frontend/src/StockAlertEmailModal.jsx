@@ -121,7 +121,7 @@ export default function StockAlertEmailModal({ product, onClose }) {
                         <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(34,197,94,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                             <Check size={28} style={{ color: 'var(--green)' }} />
                         </div>
-                        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Mail Gönderildi!</div>
+                        <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Mail Hazırlandı!</div>
                         {result && (
                             <div style={{ fontSize: 12, color: 'var(--text-secondary)', maxWidth: 400, margin: '0 auto 16px', lineHeight: 1.6 }}>
                                 {result}
