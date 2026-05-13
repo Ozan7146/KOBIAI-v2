@@ -1,4 +1,4 @@
-# KOBİ AI — Yapay Zeka Destekli Operasyon Yönetimi
+# Qtech AI — Yapay Zeka Destekli Operasyon Yönetimi
 
 > YZTA 5. Dönem AI Hackathon Projesi  
 > **Backend:** FastAPI + Python | **Frontend:** React + Vite
